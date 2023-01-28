@@ -9,14 +9,15 @@ const Nav = () => {
     <div className="navbar bg-primary mb-24 ">
       <div className="flex-1 text-white">
         <Link to="/" className="btn btn-ghost normal-case text-2xl">
-          Rocket Launch
+          <span>🚀</span>
+          <h1>SpaceX Launch Programs</h1>
         </Link>
       </div>
       <div>
         <div className="navbar-center  lg:flex ">
           <ul className="menu menu-horizontal px-1">
             <li>
-              <Link to="/" className="text-lg text-white">
+              <Link to="/" className="text-xl text-white">
                 Home
               </Link>
             </li>
