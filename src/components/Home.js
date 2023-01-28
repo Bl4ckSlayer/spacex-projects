@@ -12,7 +12,7 @@ const Home = () => {
     isLoading: isLoadingById,
   } = useGetLaunchByIdQuery(1);
   let content;
-
+  const [filter, setFilter] = useState("all");
   if (isLoading) {
     content = <p>Loading</p>;
   }
@@ -42,6 +42,24 @@ const Home = () => {
       defaultArr = newArr;
     }
 
+    const filteredLaunches = data.filter((launch) => {
+      switch (filter) {
+        case "lastMonth":
+          return (
+            new Date(launch.launch_date_local) >
+            new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+          );
+        case "lastYear":
+          return (
+            new Date(launch.launch_date_local) >
+            new Date(Date.now() - 365 * 24 * 60 * 60 * 1000)
+          );
+        default:
+          return true;
+      }
+    });
+    content = filteredLaunches;
+
     content = defaultArr.map((product) => (
       <Link to={`launches/${product.flight_number}`}>
         <ProductCard key={product.id} product={product} />
@@ -70,7 +88,11 @@ const Home = () => {
           />
         </div>
       </div>
-      <div>filter</div>
+      <div>
+        <button onClick={() => setFilter("all")}>All</button>
+        <button onClick={() => setFilter("lastMonth")}>Last Month</button>
+        <button onClick={() => setFilter("lastYear")}>Last Year</button>
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 max-w-7xl gap-14 mx-auto my-10  ">
         {content}
