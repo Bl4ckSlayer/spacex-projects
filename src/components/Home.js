@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useGetAllLunchesQuery } from "../api/ApiSlice";
 import ProductCard from "./ProductCard";
 import { Form, Link } from "react-router-dom";
+import Loading from "./Loading";
 
 const Home = () => {
   const [search, setSearch] = useState("");
@@ -54,10 +55,6 @@ const Home = () => {
       console.log("Please enter valid time");
     }
   };
-
-  if (isLoading) {
-    content = <p>Loading</p>;
-  }
 
   if (error) {
     content = <p>Something went wrong</p>;
@@ -131,6 +128,9 @@ const Home = () => {
     if (time !== "") {
       defaultArr = timeArr;
     }
+    if (defaultArr.length === 0) {
+      content = <p>No data</p>;
+    }
 
     content = defaultArr.map((product) => (
       <Link to={`launches/${product.flight_number}`}>
@@ -159,32 +159,52 @@ const Home = () => {
         </div>
       </div>
 
-      <div>
-        <select onClick={handleUpFilterUpcoming}>
-          <option value={null}>Upcoming</option>
-          <option value={true}>Yes</option>
-          <option value={false}>No</option>
-        </select>
-      </div>
+      <div className="grid grid-cols-3  max-w-7xl gap-8 mx-auto my-10  ">
+        <div>
+          <span className="btn btn-outline btn-primary  btn-disabled mb-4">
+            Filter By Upcoming
+          </span>
+          <select
+            onClick={handleUpFilterUpcoming}
+            className="select select-primary w-full max-w-xs"
+          >
+            <option value={null}>All</option>
+            <option value={true}>Yes</option>
+            <option value={false}>No</option>
+          </select>
+        </div>
 
-      <div>
-        <select onClick={handleUpFilterStatus}>
-          <option value={null}>Status</option>
-          <option value={true}>Successful</option>
-          <option value={false}>Faliure</option>
-        </select>
-      </div>
-      <div>
-        <select onClick={handleTime}>
-          <option value="">Select</option>
-          <option value="lastWeek">Last Week</option>
-          <option value="lastMonth">Last Month</option>
-          <option value="lastYear">Last Year</option>
-        </select>
+        <div>
+          <span className="btn btn-outline btn-primary  btn-disabled mb-4">
+            Filter By Launch Status
+          </span>
+          <select
+            onClick={handleUpFilterStatus}
+            className="select select-primary w-full max-w-xs"
+          >
+            <option value={null}>All Status</option>
+            <option value={true}>Successful</option>
+            <option value={false}>Faliure</option>
+          </select>
+        </div>
+        <div>
+          <span className="btn btn-outline btn-primary  btn-disabled mb-4">
+            Search By date
+          </span>
+          <select
+            onClick={handleTime}
+            className="select select-primary w-full max-w-xs"
+          >
+            <option value="">All</option>
+            <option value="lastWeek">Last Week</option>
+            <option value="lastMonth">Last Month</option>
+            <option value="lastYear">Last Year</option>
+          </select>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 max-w-7xl gap-14 mx-auto my-10  ">
-        {content}
+        {isLoading ? <Loading></Loading> : content}
       </div>
     </div>
   );

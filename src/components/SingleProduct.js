@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import React from "react";
 import { useParams } from "react-router-dom";
 import { useGetLaunchByIdQuery } from "../api/ApiSlice";
 
-import format from "date-fns/format";
+import Loading from "./Loading";
 
 const SingleProduct = () => {
   const { id } = useParams();
@@ -15,7 +15,7 @@ const SingleProduct = () => {
   let content;
 
   if (isLoadingById) {
-    content = <p>Loading</p>;
+    content = <Loading></Loading>;
   }
 
   if (errorById) {
