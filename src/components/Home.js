@@ -1,18 +1,60 @@
 import React, { useState } from "react";
-import { useGetAllLunchesQuery, useGetLaunchByIdQuery } from "../api/ApiSlice";
+import { useGetAllLunchesQuery } from "../api/ApiSlice";
 import ProductCard from "./ProductCard";
-import { Link } from "react-router-dom";
+import { Form, Link } from "react-router-dom";
 
 const Home = () => {
   const [search, setSearch] = useState("");
   const { data, error, isLoading } = useGetAllLunchesQuery();
-  const {
-    data: dataById,
-    error: errorById,
-    isLoading: isLoadingById,
-  } = useGetLaunchByIdQuery(1);
+
+  const [upcommingFilter, setUpcommingFilter] = useState(null);
+  const [upcommingStatus, setUpcommingStatus] = useState(null);
+  const [time, setTime] = useState("");
   let content;
-  const [filter, setFilter] = useState("all");
+
+  const handleUpFilterStatus = (event) => {
+    setUpcommingStatus(event.target.value);
+  };
+
+  const handleUpFilterUpcoming = (event) => {
+    setUpcommingFilter(event.target.value);
+  };
+  const handleTime = (event) => {
+    setTime(event.target.value);
+  };
+  const filterByLaunchDate = (time) => {
+    // filter by last week
+    if (time === "lastWeek") {
+      const lastWeek = new Date();
+      lastWeek.setDate(lastWeek.getDate() - 7);
+      const lastWeekDate = lastWeek.toISOString().split("T")[0];
+      const filteredData = data?.filter((item) => {
+        return item?.launch_date_local.split("T")[0] >= lastWeekDate;
+      });
+      console.log(filteredData);
+    } else if (time === "lastMonth") {
+      // filter by last month
+      const lastMonth = new Date();
+      lastMonth.setDate(lastMonth.getDate() - 30);
+      const lastMonthDate = lastMonth.toISOString().split("T")[0];
+      const filteredData = data?.filter((item) => {
+        return item?.launch_date_local.split("T")[0] >= lastMonthDate;
+      });
+      console.log(filteredData);
+    } else if (time === "lastYear") {
+      // filter by last year
+      const lastYear = new Date();
+      lastYear.setDate(lastYear.getDate() - 365);
+      const lastYearDate = lastYear.toISOString().split("T")[0];
+      const filteredData = data?.filter((item) => {
+        return item?.launch_date_local.split("T")[0] >= lastYearDate;
+      });
+      console.log(filteredData);
+    } else {
+      console.log("Please enter valid time");
+    }
+  };
+
   if (isLoading) {
     content = <p>Loading</p>;
   }
@@ -27,6 +69,8 @@ const Home = () => {
 
   if (!isLoading && !error && data.length) {
     let newArr = [];
+
+    // Searching
     if (search !== "") {
       data.filter((item) => {
         if (
@@ -36,29 +80,57 @@ const Home = () => {
         }
       });
     }
-
     let defaultArr = data;
     if (search !== "") {
       defaultArr = newArr;
     }
 
-    const filteredLaunches = data.filter((launch) => {
-      switch (filter) {
-        case "lastMonth":
-          return (
-            new Date(launch.launch_date_local) >
-            new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
-          );
-        case "lastYear":
-          return (
-            new Date(launch.launch_date_local) >
-            new Date(Date.now() - 365 * 24 * 60 * 60 * 1000)
-          );
-        default:
-          return true;
+    let filterStatus = null;
+    if (upcommingStatus === "true") filterStatus = true;
+    else if (upcommingStatus === "false") filterStatus = false;
+
+    // Filter Upcoming
+    let filterUpcoming = null;
+    if (upcommingFilter === "true") filterUpcoming = true;
+    else if (upcommingFilter === "false") filterUpcoming = false;
+
+    let filterUpcomingArr = [];
+    if (filterUpcoming !== null) {
+      defaultArr.filter((item) => {
+        if (item.upcoming === filterUpcoming) {
+          filterUpcomingArr.push(item);
+        }
+      });
+    }
+    if (filterUpcomingArr.length !== 0) {
+      defaultArr = filterUpcomingArr;
+    }
+
+    let filterStatusArr = [];
+    if (filterStatus !== null) {
+      defaultArr.filter((item) => {
+        if (item.launch_success === filterStatus) {
+          filterStatusArr.push(item);
+        }
+      });
+    }
+
+    if (filterStatusArr.length !== 0) {
+      defaultArr = filterStatusArr;
+    }
+
+    console.log(defaultArr[0]);
+    let timeArr = [];
+    defaultArr.filter((item) => {
+      let newtime = filterByLaunchDate(time);
+      if (item.launch_date_local === newtime) {
+        timeArr.push(item);
       }
     });
-    content = filteredLaunches;
+
+    if (time !== "") {
+      defaultArr = timeArr;
+    }
 
     content = defaultArr.map((product) => (
       <Link to={`launches/${product.flight_number}`}>
@@ -67,8 +139,6 @@ const Home = () => {
     ));
   }
 
-  // console.log(data, error, isLoading, search);
-  // console.log(dataById, errorById, isLoadingById);
   return (
     <div>
       <div className="flex-none gap-2 text-center">
@@ -88,10 +158,29 @@ const Home = () => {
           />
         </div>
       </div>
+
       <div>
-        <button onClick={() => setFilter("all")}>All</button>
-        <button onClick={() => setFilter("lastMonth")}>Last Month</button>
-        <button onClick={() => setFilter("lastYear")}>Last Year</button>
+        <select onClick={handleUpFilterUpcoming}>
+          <option value={null}>Upcoming</option>
+          <option value={true}>Yes</option>
+          <option value={false}>No</option>
+        </select>
+      </div>
+
+      <div>
+        <select onClick={handleUpFilterStatus}>
+          <option value={null}>Status</option>
+          <option value={true}>Successful</option>
+          <option value={false}>Faliure</option>
+        </select>
+      </div>
+      <div>
+        <select onClick={handleTime}>
+          <option value="">Select</option>
+          <option value="lastWeek">Last Week</option>
+          <option value="lastMonth">Last Month</option>
+          <option value="lastYear">Last Year</option>
+        </select>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 max-w-7xl gap-14 mx-auto my-10  ">
